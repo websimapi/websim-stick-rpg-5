@@ -16,9 +16,6 @@ class Game {
         this.sound = new Sound();
         this.ui = new UI();
 
-        // Resize first to get dimensions.
-        this.resize();
-
         this.world = new World();
         this.player = new Player(0, 0); // Start at world origin
         this.enemies = []; // Start with no enemies, they will spawn
@@ -37,6 +34,10 @@ class Game {
             this.player,
             this.enemies
         );
+
+        // Resize first to get dimensions. Must be called after minimap is initialized.
+        this.resize();
+        
         window.addEventListener('resize', () => this.resize());
     }
 
