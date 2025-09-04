@@ -56,10 +56,18 @@ class Chunk {
              this.pattern = ctx.createPattern(this.backgroundImage, 'repeat');
         }
         
+        ctx.save();
         ctx.fillStyle = this.pattern;
-        const screenX = this.x * CHUNK_SIZE - offsetX;
-        const screenY = this.y * CHUNK_SIZE - offsetY;
-        ctx.fillRect(screenX, screenY, CHUNK_SIZE, CHUNK_SIZE);
+        
+        // Translate the canvas so the pattern's origin aligns with the world's origin
+        // This makes the pattern scroll with the camera.
+        ctx.translate(-offsetX, -offsetY);
+        
+        // Fill a rectangle covering the entire canvas. The pattern will be correctly positioned.
+        // We do this inside each chunk's draw but it's for the specific biome texture.
+        ctx.fillRect(offsetX, offsetY, ctx.canvas.width, ctx.canvas.height);
+        
+        ctx.restore();
     }
 }
 
@@ -148,7 +156,18 @@ export class World {
             for (let x = startChunkX; x <= endChunkX; x++) {
                 const chunk = this.getChunk(x, y);
                 if(chunk) {
+                    // Set clipping region for this chunk
+                    ctx.save();
+                    const screenX = x * CHUNK_SIZE - cameraX;
+                    const screenY = y * CHUNK_SIZE - cameraY;
+                    ctx.beginPath();
+                    ctx.rect(screenX, screenY, CHUNK_SIZE, CHUNK_SIZE);
+                    ctx.clip();
+
+                    // Draw the chunk's background, which will be clipped to its area
                     chunk.draw(ctx, cameraX, cameraY);
+                    
+                    ctx.restore();
                 }
             }
         }
