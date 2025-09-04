@@ -1,5 +1,3 @@
-
-```
 const CHUNK_SIZE = 512; 
 
 export class Minimap {
@@ -19,6 +17,7 @@ export class Minimap {
     }
 
     draw() {
+        if (!this.canvas.width || !this.canvas.height) return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         const playerChunkX = Math.floor(this.player.x / CHUNK_SIZE);
@@ -85,3 +84,4 @@ export class Minimap {
         });
     }
 }
+
