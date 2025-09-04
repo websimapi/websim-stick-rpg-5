@@ -1,0 +1,180 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #111;
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
+}
+
+#game-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+canvas {
+    background-color: #333;
+    display: block;
+    touch-action: none;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+#ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#stats-display {
+    padding: 10px;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    gap: 20px;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.bar-container {
+    width: 100px;
+    height: 10px;
+    border: 1px solid #fff;
+    background: #555;
+}
+
+.bar {
+    height: 100%;
+    background: #0f0;
+    transition: width 0.3s;
+}
+
+#message-log {
+    position: absolute;
+    bottom: 120px;
+    left: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    height: 4em;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+#controls {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: auto;
+}
+
+#d-pad {
+    display: grid;
+    grid-template-areas:
+        ". up ."
+        "left . right"
+        ". down .";
+    gap: 5px;
+    width: 120px;
+    height: 120px;
+}
+
+.d-pad-btn, .action-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #fff;
+    background: rgba(128, 128, 128, 0.5);
+    color: white;
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+}
+.d-pad-btn:active, .action-btn:active {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+#up { grid-area: up; }
+#left { grid-area: left; }
+#right { grid-area: right; }
+#down { grid-area: down; }
+
+#action-buttons {
+    display: flex;
+    gap: 10px;
+}
+.action-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+#combat-ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 20px;
+}
+
+#enemy-stats {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+#combat-actions {
+    display: flex;
+    gap: 20px;
+}
+
+.combat-btn {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    background: #333;
+    border: 2px solid #fff;
+    color: white;
+    cursor: pointer;
+}
+.combat-btn:hover {
+    background: #555;
+}
+
+.hidden {
+    display: none !important;
+}
+
