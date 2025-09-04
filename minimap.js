@@ -31,6 +31,10 @@ export class Minimap {
         const playerYInChunk = this.player.y - playerChunkY * CHUNK_SIZE;
         const mapOffsetX = (playerXInChunk / CHUNK_SIZE) * minimapChunkSize;
         const mapOffsetY = (playerYInChunk / CHUNK_SIZE) * minimapChunkSize;
+        
+        // This additional offset centers the map correctly, accounting for the player always being in the middle.
+        const centeringOffsetX = minimapChunkSize / 2;
+        const centeringOffsetY = minimapChunkSize / 2;
 
         for (let y = -this.viewDistance; y <= this.viewDistance; y++) {
             for (let x = -this.viewDistance; x <= this.viewDistance; x++) {
@@ -38,8 +42,8 @@ export class Minimap {
                 const chunkY = playerChunkY + y;
                 const chunk = this.world.getChunk(chunkX, chunkY);
 
-                const drawX = (x + this.viewDistance) * minimapChunkSize - mapOffsetX;
-                const drawY = (y + this.viewDistance) * minimapChunkSize - mapOffsetY;
+                const drawX = (x + this.viewDistance) * minimapChunkSize - mapOffsetX + centeringOffsetX;
+                const drawY = (y + this.viewDistance) * minimapChunkSize - mapOffsetY + centeringOffsetY;
 
                 if (chunk) {
                     this.ctx.fillStyle = chunk.biome.color || '#333';
