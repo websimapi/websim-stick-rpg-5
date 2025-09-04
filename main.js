@@ -13,13 +13,20 @@ class Game {
         this.gameState = 'explore'; // 'explore', 'combat', 'paused'
         this.sound = new Sound();
         this.ui = new UI();
-        this.world = new World();
-        this.player = new Player(400, 300);
-        this.enemies = [new Enemy(600, 200), new Enemy(200, 400)];
+
+        // Resize first to get dimensions.
+        this.resize();
+
+        this.world = new World(this.canvas.width, this.canvas.height);
+        this.player = new Player(this.canvas.width / 2, this.canvas.height / 2);
+        this.enemies = [
+            new Enemy(this.canvas.width * 0.75, this.canvas.height * 0.5), 
+            new Enemy(this.canvas.width * 0.25, this.canvas.height * 0.75)
+        ];
         this.controls = new Controls();
         this.combat = null;
         this.lastTime = 0;
-        this.resize();
+        
         window.addEventListener('resize', () => this.resize());
     }
 
@@ -34,19 +41,13 @@ class Game {
     }
 
     resize() {
-        const aspectRatio = 16 / 9;
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        if (width / height > aspectRatio) {
-            this.canvas.height = height;
-            this.canvas.width = height * aspectRatio;
-        } else {
-            this.canvas.width = width;
-            this.canvas.height = width / aspectRatio;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        
+        if (this.world) {
+            this.world.width = this.canvas.width;
+            this.world.height = this.canvas.height;
         }
-        this.canvas.style.width = `${this.canvas.width}px`;
-        this.canvas.style.height = `${this.canvas.height}px`;
     }
 
     startGameLoop() {
@@ -119,4 +120,3 @@ class Game {
 const canvas = document.getElementById('game-canvas');
 const game = new Game(canvas);
 game.init();
-

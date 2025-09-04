@@ -7,10 +7,10 @@ async function loadImage(src) {
 }
 
 export class World {
-    constructor() {
+    constructor(width, height) {
         this.backgroundImage = null;
-        this.width = 800; // Corresponds to canvas size
-        this.height = 450;
+        this.width = width;
+        this.height = height;
     }
 
     async init() {
@@ -38,4 +38,3 @@ export class World {
         return true;
     }
 }
-

@@ -4,7 +4,7 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #111;
+    background-color: #000;
     font-family: 'Courier New', Courier, monospace;
     color: white;
 }
@@ -16,15 +16,14 @@ body, html {
     justify-content: center;
     align-items: center;
     position: relative;
+    background-color: #000;
 }
 
 canvas {
-    background-color: #333;
     display: block;
     touch-action: none;
-    max-width: 100%;
-    max-height: 100%;
-    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: 100%;
 }
 
 #ui-container {
@@ -67,14 +66,14 @@ canvas {
 
 #message-log {
     position: absolute;
-    bottom: 120px;
+    bottom: 28vmin;
     left: 10px;
     right: 10px;
     background: rgba(0,0,0,0.7);
     padding: 5px;
     border-radius: 5px;
-    font-size: 0.9em;
-    height: 4em;
+    font-size: 2.5vmin;
+    height: 12vmin;
     overflow-y: auto;
     display: flex;
     flex-direction: column-reverse;
@@ -97,22 +96,25 @@ canvas {
         ". up ."
         "left . right"
         ". down .";
-    gap: 5px;
-    width: 120px;
-    height: 120px;
+    gap: 1vmin;
+    width: 25vmin;
+    height: 25vmin;
 }
 
 .d-pad-btn, .action-btn {
-    width: 40px;
-    height: 40px;
     border: 2px solid #fff;
     background: rgba(128, 128, 128, 0.5);
     color: white;
-    font-size: 1.5em;
+    font-size: 5vmin;
     display: flex;
     justify-content: center;
     align-items: center;
     user-select: none;
+}
+.d-pad-btn {
+    width: 8vmin;
+    height: 8vmin;
+    border-radius: 1vmin;
 }
 .d-pad-btn:active, .action-btn:active {
     background: rgba(255, 255, 255, 0.5);
@@ -128,8 +130,8 @@ canvas {
     gap: 10px;
 }
 .action-btn {
-    width: 60px;
-    height: 60px;
+    width: 15vmin;
+    height: 15vmin;
     border-radius: 50%;
 }
 
@@ -159,12 +161,12 @@ canvas {
 
 #combat-actions {
     display: flex;
-    gap: 20px;
+    gap: 5vmin;
 }
 
 .combat-btn {
-    padding: 15px 30px;
-    font-size: 1.2em;
+    padding: 2vmin 4vmin;
+    font-size: 3vmin;
     background: #333;
     border: 2px solid #fff;
     color: white;
@@ -177,4 +179,3 @@ canvas {
 .hidden {
     display: none !important;
 }
-
