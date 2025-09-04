@@ -4,6 +4,9 @@ const BIOMES = {
     GRASSLAND: {
         name: 'GRASSLAND',
         texture: 'background.png',
+        color: '#7CFC00', // lawn green for minimap
+        spawnChance: 0.3,
+        maxEnemies: 2,
         neighbors: [ // Biome, weight
             ['GRASSLAND', 10],
             ['FOREST', 2],
@@ -13,6 +16,9 @@ const BIOMES = {
     FOREST: {
         name: 'FOREST',
         texture: 'forest_background.png',
+        color: '#228B22', // forest green
+        spawnChance: 0.5,
+        maxEnemies: 3,
         neighbors: [
             ['GRASSLAND', 2],
             ['FOREST', 10]
@@ -21,6 +27,9 @@ const BIOMES = {
     DESERT: {
         name: 'DESERT',
         texture: 'desert_background.png',
+        color: '#F4A460', // sandy brown
+        spawnChance: 0.2,
+        maxEnemies: 1,
         neighbors: [
             ['GRASSLAND', 2],
             ['DESERT', 10]
@@ -43,6 +52,7 @@ class Chunk {
         this.biome = biome;
         this.backgroundImage = null;
         this.pattern = null;
+        this.hasSpawned = false; // To prevent respawning on chunk reload
     }
 
     async init() {
@@ -92,7 +102,7 @@ export class World {
 
     generateChunk(chunkX, chunkY) {
         const key = this.getChunkKey(chunkX, chunkY);
-        if (this.chunks.has(key)) return this.chunks.get(key);
+        if (this.chunks.has(key)) return { chunk: this.chunks.get(key), spawnPoints: [] };
         
         // Biome generation based on neighbors
         const neighborBiomes = [];
@@ -131,19 +141,46 @@ export class World {
         const chunk = new Chunk(chunkX, chunkY, biome);
         chunk.init(); // Start loading texture
         this.chunks.set(key, chunk);
-        return chunk;
+        
+        const spawnPoints = this.getSpawnPointsForChunk(chunk);
+
+        return { chunk, spawnPoints };
     }
 
-    update(playerX, playerY) {
+    getSpawnPointsForChunk(chunk) {
+        if (chunk.hasSpawned) return [];
+
+        const spawnPoints = [];
+        const biome = chunk.biome;
+
+        if (Math.random() < biome.spawnChance) {
+            const numEnemies = Math.floor(Math.random() * biome.maxEnemies) + 1;
+            for (let i = 0; i < numEnemies; i++) {
+                const x = chunk.x * CHUNK_SIZE + Math.random() * CHUNK_SIZE;
+                const y = chunk.y * CHUNK_SIZE + Math.random() * CHUNK_SIZE;
+                spawnPoints.push({ x, y });
+            }
+        }
+        chunk.hasSpawned = true;
+        return spawnPoints;
+    }
+
+    update(playerX, playerY, isInitialLoad = false) {
         const playerChunkX = Math.floor(playerX / CHUNK_SIZE);
         const playerChunkY = Math.floor(playerY / CHUNK_SIZE);
         
+        let allNewSpawnPoints = [];
+
         // Load chunks in a 3x3 grid around the player
         for (let y = -1; y <= 1; y++) {
             for (let x = -1; x <= 1; x++) {
-                this.generateChunk(playerChunkX + x, playerChunkY + y);
+                const { spawnPoints } = this.generateChunk(playerChunkX + x, playerChunkY + y);
+                if (!isInitialLoad) {
+                    allNewSpawnPoints.push(...spawnPoints);
+                }
             }
         }
+        return allNewSpawnPoints;
     }
 
     draw(ctx, cameraX, cameraY, canvasWidth, canvasHeight) {

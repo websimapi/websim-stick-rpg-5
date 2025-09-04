@@ -5,6 +5,7 @@ import { Controls } from './controls.js';
 import { UI } from './ui.js';
 import { Sound } from './sound.js';
 import { Combat } from './combat.js';
+import { Minimap } from './minimap.js';
 
 class Game {
     constructor(canvas) {
@@ -20,10 +21,7 @@ class Game {
 
         this.world = new World();
         this.player = new Player(0, 0); // Start at world origin
-        this.enemies = [
-            new Enemy(300, 200), 
-            new Enemy(-200, 400)
-        ];
+        this.enemies = []; // Start with no enemies, they will spawn
         this.controls = new Controls();
         this.combat = null;
         this.lastTime = 0;
@@ -33,16 +31,22 @@ class Game {
             y: 0
         };
 
+        this.minimap = new Minimap(
+            document.getElementById('minimap-canvas'),
+            this.world,
+            this.player,
+            this.enemies
+        );
         window.addEventListener('resize', () => this.resize());
     }
 
     async init() {
         await this.sound.init();
-        await Promise.all([
-            this.world.init(),
-            this.player.init(),
-            ...this.enemies.map(e => e.init())
-        ]);
+        await this.world.init();
+        await this.player.init();
+        // Initial world update to spawn first chunk without enemies
+        this.world.update(this.player.x, this.player.y, true);
+        
         this.startGameLoop();
     }
 
@@ -50,6 +54,7 @@ class Game {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         this.ctx.imageSmoothingEnabled = false;
+        this.minimap.resize();
     }
 
     startGameLoop() {
@@ -69,7 +74,8 @@ class Game {
     update(deltaTime) {
         if (this.gameState === 'explore') {
             this.player.update(deltaTime, this.controls.movement);
-            this.world.update(this.player.x, this.player.y);
+            const newSpawnPoints = this.world.update(this.player.x, this.player.y);
+            this.spawnEnemies(newSpawnPoints);
 
             this.enemies.forEach(enemy => {
                 if(enemy.isAlive) {
@@ -114,6 +120,7 @@ class Game {
         });
 
         this.ui.updatePlayerHP(this.player.hp, this.player.maxHp);
+        this.minimap.draw();
     }
 
     startCombat(enemy) {
@@ -132,6 +139,14 @@ class Game {
         this.combat = null;
         this.gameState = 'explore';
         this.ui.hideCombatUI();
+    }
+
+    spawnEnemies(spawnPoints) {
+        spawnPoints.forEach(point => {
+            const newEnemy = new Enemy(point.x, point.y);
+            newEnemy.init(); // important to load image
+            this.enemies.push(newEnemy);
+        });
     }
 }
 
