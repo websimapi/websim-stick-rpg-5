@@ -26,14 +26,20 @@ export class Minimap {
         const totalChunks = this.viewDistance * 2 + 1;
         const minimapChunkSize = this.canvas.width / totalChunks;
 
+        // Calculate player's sub-chunk position for smooth scrolling
+        const playerXInChunk = this.player.x - playerChunkX * CHUNK_SIZE;
+        const playerYInChunk = this.player.y - playerChunkY * CHUNK_SIZE;
+        const mapOffsetX = (playerXInChunk / CHUNK_SIZE) * minimapChunkSize;
+        const mapOffsetY = (playerYInChunk / CHUNK_SIZE) * minimapChunkSize;
+
         for (let y = -this.viewDistance; y <= this.viewDistance; y++) {
             for (let x = -this.viewDistance; x <= this.viewDistance; x++) {
                 const chunkX = playerChunkX + x;
                 const chunkY = playerChunkY + y;
                 const chunk = this.world.getChunk(chunkX, chunkY);
 
-                const drawX = (x + this.viewDistance) * minimapChunkSize;
-                const drawY = (y + this.viewDistance) * minimapChunkSize;
+                const drawX = (x + this.viewDistance) * minimapChunkSize - mapOffsetX;
+                const drawY = (y + this.viewDistance) * minimapChunkSize - mapOffsetY;
 
                 if (chunk) {
                     this.ctx.fillStyle = chunk.biome.color || '#333';
