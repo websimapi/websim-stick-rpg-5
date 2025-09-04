@@ -23,13 +23,17 @@ export class Enemy {
         this.image = await loadImage('enemy.png');
     }
 
-    draw(ctx) {
+    draw(ctx, screenX, screenY) {
         if (!this.isAlive) return;
         if (this.image) {
-            ctx.drawImage(this.image, this.x - this.width / 2, this.y - this.height, this.width, this.height);
+             const drawX = screenX - this.width / 2;
+             const drawY = screenY - this.height;
+            ctx.drawImage(this.image, drawX, drawY, this.width, this.height);
         } else {
             ctx.fillStyle = 'red';
-            ctx.fillRect(this.x - 15, this.y - 50, 30, 50);
+            const drawX = screenX - 15;
+            const drawY = screenY - 50;
+            ctx.fillRect(drawX, drawY, 30, 50);
         }
     }
 
@@ -47,4 +51,3 @@ export class Enemy {
         return damage;
     }
 }
-

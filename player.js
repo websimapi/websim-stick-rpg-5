@@ -30,22 +30,22 @@ export class Player {
 
     update(deltaTime, movement, world) {
         if (movement.x !== 0 || movement.y !== 0) {
-            const newX = this.x + movement.x * this.speed * deltaTime;
-            const newY = this.y + movement.y * this.speed * deltaTime;
-            
-            if (world.isWalkable(newX, newY, this.width, this.height)) {
-                this.x = newX;
-                this.y = newY;
-            }
+            // World is now infinite, so we don't need world.isWalkable boundary checks
+            this.x += movement.x * this.speed * deltaTime;
+            this.y += movement.y * this.speed * deltaTime;
         }
     }
 
-    draw(ctx) {
+    draw(ctx, screenX, screenY) {
         if (this.image) {
-            ctx.drawImage(this.image, this.x - this.width / 2, this.y - this.height, this.width, this.height);
+            const drawX = screenX - this.width / 2;
+            const drawY = screenY - this.height;
+            ctx.drawImage(this.image, drawX, drawY, this.width, this.height);
         } else {
             ctx.fillStyle = 'blue';
-            ctx.fillRect(this.x - 15, this.y - 50, 30, 50);
+            const drawX = screenX - 15;
+            const drawY = screenY - 50;
+            ctx.fillRect(drawX, drawY, 30, 50);
         }
     }
 
@@ -61,4 +61,3 @@ export class Player {
         return damage;
     }
 }
-

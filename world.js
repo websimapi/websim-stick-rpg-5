@@ -1,3 +1,33 @@
+const CHUNK_SIZE = 512;
+
+const BIOMES = {
+    GRASSLAND: {
+        name: 'GRASSLAND',
+        texture: 'background.png',
+        neighbors: [ // Biome, weight
+            ['GRASSLAND', 10],
+            ['FOREST', 2],
+            ['DESERT', 1]
+        ]
+    },
+    FOREST: {
+        name: 'FOREST',
+        texture: 'forest_background.png',
+        neighbors: [
+            ['GRASSLAND', 2],
+            ['FOREST', 10]
+        ]
+    },
+    DESERT: {
+        name: 'DESERT',
+        texture: 'desert_background.png',
+        neighbors: [
+            ['GRASSLAND', 2],
+            ['DESERT', 10]
+        ]
+    }
+};
+
 async function loadImage(src) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -6,35 +36,127 @@ async function loadImage(src) {
     });
 }
 
-export class World {
-    constructor(width, height) {
+class Chunk {
+    constructor(chunkX, chunkY, biome) {
+        this.x = chunkX;
+        this.y = chunkY;
+        this.biome = biome;
         this.backgroundImage = null;
-        this.width = width;
-        this.height = height;
+        this.pattern = null;
     }
 
     async init() {
-        this.backgroundImage = await loadImage('background.png');
+        this.backgroundImage = await loadImage(this.biome.texture);
     }
 
-    draw(ctx) {
-        if (this.backgroundImage) {
-            const pattern = ctx.createPattern(this.backgroundImage, 'repeat');
-            ctx.fillStyle = pattern;
-            ctx.fillRect(0, 0, this.width, this.height);
+    draw(ctx, offsetX, offsetY) {
+        if (!this.backgroundImage) return;
+
+        if (!this.pattern) {
+             this.pattern = ctx.createPattern(this.backgroundImage, 'repeat');
+        }
+        
+        ctx.fillStyle = this.pattern;
+        const screenX = this.x * CHUNK_SIZE - offsetX;
+        const screenY = this.y * CHUNK_SIZE - offsetY;
+        ctx.fillRect(screenX, screenY, CHUNK_SIZE, CHUNK_SIZE);
+    }
+}
+
+export class World {
+    constructor() {
+        this.chunks = new Map();
+        this.loadedTextures = new Map();
+    }
+
+    async init() {
+        // No-op, chunks init themselves
+    }
+    
+    getChunkKey(chunkX, chunkY) {
+        return `${chunkX},${chunkY}`;
+    }
+
+    getChunk(chunkX, chunkY) {
+        const key = this.getChunkKey(chunkX, chunkY);
+        return this.chunks.get(key);
+    }
+
+    generateChunk(chunkX, chunkY) {
+        const key = this.getChunkKey(chunkX, chunkY);
+        if (this.chunks.has(key)) return this.chunks.get(key);
+        
+        // Biome generation based on neighbors
+        const neighborBiomes = [];
+        const neighbors = [
+            this.getChunk(chunkX + 1, chunkY),
+            this.getChunk(chunkX - 1, chunkY),
+            this.getChunk(chunkX, chunkY + 1),
+            this.getChunk(chunkX, chunkY - 1)
+        ].filter(Boolean);
+
+        if (neighbors.length > 0) {
+             neighbors.forEach(n => {
+                const biomeData = BIOMES[n.biome.name];
+                if (biomeData && biomeData.neighbors) {
+                    neighborBiomes.push(...biomeData.neighbors);
+                }
+            });
         } else {
-            ctx.fillStyle = '#5a842f';
-            ctx.fillRect(0, 0, this.width, this.height);
+            // First chunk
+             neighborBiomes.push(...BIOMES.GRASSLAND.neighbors);
+        }
+        
+        const totalWeight = neighborBiomes.reduce((sum, [, weight]) => sum + weight, 0);
+        let random = Math.random() * totalWeight;
+        let chosenBiomeName = 'GRASSLAND';
+
+        for (const [biomeName, weight] of neighborBiomes) {
+            if (random < weight) {
+                chosenBiomeName = biomeName;
+                break;
+            }
+            random -= weight;
+        }
+
+        const biome = BIOMES[chosenBiomeName];
+        const chunk = new Chunk(chunkX, chunkY, biome);
+        chunk.init(); // Start loading texture
+        this.chunks.set(key, chunk);
+        return chunk;
+    }
+
+    update(playerX, playerY) {
+        const playerChunkX = Math.floor(playerX / CHUNK_SIZE);
+        const playerChunkY = Math.floor(playerY / CHUNK_SIZE);
+        
+        // Load chunks in a 3x3 grid around the player
+        for (let y = -1; y <= 1; y++) {
+            for (let x = -1; x <= 1; x++) {
+                this.generateChunk(playerChunkX + x, playerChunkY + y);
+            }
         }
     }
 
-    isWalkable(x, y, width, height) {
-        // Simple boundary check for now
-        const halfWidth = width / 2;
-        const fullHeight = height;
-        if (x - halfWidth < 0 || x + halfWidth > this.width || y - fullHeight < 0 || y > this.height) {
-            return false;
+    draw(ctx, cameraX, cameraY, canvasWidth, canvasHeight) {
+        const startChunkX = Math.floor(cameraX / CHUNK_SIZE);
+        const startChunkY = Math.floor(cameraY / CHUNK_SIZE);
+        const endChunkX = Math.floor((cameraX + canvasWidth) / CHUNK_SIZE);
+        const endChunkY = Math.floor((cameraY + canvasHeight) / CHUNK_SIZE);
+
+        for (let y = startChunkY; y <= endChunkY; y++) {
+            for (let x = startChunkX; x <= endChunkX; x++) {
+                const chunk = this.getChunk(x, y);
+                if(chunk) {
+                    chunk.draw(ctx, cameraX, cameraY);
+                }
+            }
         }
+    }
+    
+    isWalkable(x, y, width, height) {
+        // World is infinite, so no boundary checks.
+        // This can be expanded later for collision with objects within chunks.
         return true;
     }
 }
